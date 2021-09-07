@@ -1,5 +1,7 @@
 package fpinscala.gettingstarted
 
+import scala.annotation.tailrec
+
 // A comment!
 /* Another comment */
 /** A documentation comment */
@@ -36,7 +38,19 @@ object MyModule {
 
   // Exercise 1: Write a function to compute the nth fibonacci number
 
-  def fib(n: Int): Int = ???
+  def fib(n: Int): Int = {
+    require(n >= 0)
+
+    @tailrec
+    def loop(n1: Int, n2: Int, n: Int): Int = {
+      if (n <= 1 ) n
+      else if (n == 2) n1 + n2
+      else loop(n2, n1 + n2, n - 1)
+    }
+
+    loop(0, 1, n)
+
+  }
 
   // This definition and `formatAbs` are very similar..
   private def formatFactorial(n: Int) = {
@@ -140,7 +154,20 @@ object PolymorphicFunctions {
 
   // Exercise 2: Implement a polymorphic function to check whether
   // an `Array[A]` is sorted
-  def isSorted[A](as: Array[A], gt: (A,A) => Boolean): Boolean = ???
+  def isSorted[A](as: Array[A], gt: (A,A) => Boolean): Boolean = {
+    @tailrec
+    def loop(x: Array[A], allSorted: Boolean): Boolean = {
+      if (x.tail.isEmpty) allSorted
+      else {
+        val first = x.head
+        val second = x.tail.head
+        if (gt(second, first)) loop(x.tail, allSorted)
+        else false
+      }
+    }
+
+    loop(as, allSorted = true)
+  }
 
   // Polymorphic functions are often so constrained by their type
   // that they only have one implementation! Here's an example:
@@ -175,4 +202,13 @@ object PolymorphicFunctions {
 
   def compose[A,B,C](f: B => C, g: A => B): A => C =
     ???
+}
+
+object Test extends App {
+  import PolymorphicFunctions._
+  val x = Range(1,100).toArray
+  val sorted:Boolean = isSorted[Int](Array(1,2,3,4), (x:Int, y:Int)=> x > y)
+  val notSorted:Boolean = isSorted[Int](Array(1,2,33,4), (x:Int, y:Int)=> x > y)
+  println(s"Expected: true | result: $sorted")
+  println(s"Expected: false | result: $notSorted")
 }
